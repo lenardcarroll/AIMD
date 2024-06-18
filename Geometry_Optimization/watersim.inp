@@ -42,6 +42,7 @@
     &POISSON
        ! the default, gas phase systems should have 'NONE' and a wavelet solver
        PERIODIC XYZ
+       POISSON_SOLVER PERIODIC
     &END
 
     ! use the OT METHOD for robust and efficient SCF, suitable for all non-metallic systems.
