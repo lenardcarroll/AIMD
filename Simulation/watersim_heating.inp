@@ -1,0 +1,165 @@
+&GLOBAL
+  PROJECT WATER
+  ! various runtypes (energy, geo_opt, etc.) available.
+  RUN_TYPE MD
+  ! limit the runs to 5min
+  WALLTIME 143200
+    ! reduce the amount of IO
+  IOLEVEL  LOW 
+&END GLOBAL
+
+&FORCE_EVAL
+  ! the electronic structure part of CP2K is named Quickstep
+  METHOD Quickstep
+  &DFT
+    ! basis sets and pseudopotential files can be found in cp2k/data
+    BASIS_SET_FILE_NAME ./BASIS_MOLOPT
+    POTENTIAL_FILE_NAME ./GTH_POTENTIALS
+
+    ! Charge and multiplicity
+    CHARGE 0
+    MULTIPLICITY 1
+
+    &MGRID
+       ! PW cutoff ... depends on the element (basis) too small cutoffs lead to the eggbox effect.
+       ! certain calculations (e.g. geometry optimization, vibrational frequencies,
+       ! NPT and cell optimizations, need higher cutoffs)
+       CUTOFF [Ry] 500
+       REL_CUTOFF [Ry] 50
+       NGRIDS 5
+    &END
+
+    &QS
+       ! use the GPW method (i.e. pseudopotential based calculations with the Gaussian and Plane Waves scheme).
+       METHOD GPW 
+       ! default threshold for numerics ~ roughly numerical accuracy of the total energy per electron,
+       ! sets reasonable values for all other thresholds.
+       EPS_DEFAULT 1.0E-10 
+       ! used for MD, the method used to generate the initial guess.
+       EXTRAPOLATION ASPC
+    &END
+
+    &POISSON
+       ! the default, gas phase systems should have 'NONE' and a wavelet solver
+       PERIODIC XYZ 
+    &END
+
+    ! use the OT METHOD for robust and efficient SCF, suitable for all non-metallic systems.
+    &SCF                              
+      SCF_GUESS ATOMIC ! can be used to RESTART an interrupted calculation
+      MAX_SCF 1000
+      EPS_SCF 1.0E-6 ! accuracy of the SCF procedure typically 1.0E-6 - 1.0E-7
+      &OT
+        ! an accurate preconditioner suitable also for larger systems
+        PRECONDITIONER FULL_SINGLE_INVERSE
+        ! the most robust choice (DIIS might sometimes be faster, but not as stable. CG for most accuracy).
+        MINIMIZER DIIS
+      &END OT
+      &OUTER_SCF ! repeat the inner SCF cycle 10 times
+        MAX_SCF 10
+        EPS_SCF 1.0E-6 ! must match the above
+      &END
+      ! do not store the wfn during MD
+      &PRINT
+        &RESTART OFF
+        &END
+      &END
+    &END SCF
+
+    ! specify the exchange and correlation treatment
+    &XC
+      ! use a PBE functional 
+      &XC_FUNCTIONAL 
+         &PBE
+         &END
+      &END XC_FUNCTIONAL
+      ! adding Grimme's D3 correction (by default without C9 terms) 
+      &VDW_POTENTIAL
+         POTENTIAL_TYPE PAIR_POTENTIAL 
+         &PAIR_POTENTIAL
+            PARAMETER_FILE_NAME ./dftd3.dat
+            TYPE DFTD3
+            REFERENCE_FUNCTIONAL PBE
+            !Cutoff value is twice this amount
+            R_CUTOFF [angstrom] 12
+         &END
+      &END VDW_POTENTIAL
+    &END XC
+  &END DFT
+ 
+  ! description of the system
+  &SUBSYS
+    &CELL 
+      ! unit cells that are orthorhombic are more efficient with CP2K
+      A 10.057829609  0.00 0.00
+      B 0.00 8.13496023432  0.00
+      C 0.00 0.00 9.89977469171
+    &END CELL
+
+    ! atom coordinates can be in the &COORD section,
+    ! or provided as an external file.
+    &TOPOLOGY
+      COORD_FILE_NAME water.xyz
+      COORD_FILE_FORMAT XYZ
+    &END
+
+    ! MOLOPT basis sets are fairly costly,
+    ! but in the 'DZVP-MOLOPT-SR-GTH' available for all elements
+    ! their contracted nature makes them suitable
+    ! for condensed and gas phase systems alike.
+    &KIND H                              
+      BASIS_SET DZVP-MOLOPT-GTH ! Used a smaller basis set here for faster AIMD simulations
+      POTENTIAL GTH-PBE-q1             
+    &END KIND
+    &KIND O
+      BASIS_SET DZVP-MOLOPT-GTH
+      POTENTIAL GTH-PBE-q6
+    &END KIND
+  &END SUBSYS
+&END FORCE_EVAL
+
+! how to propagate the system, selection via RUN_TYPE in the &GLOBAL section
+&MOTION
+ &GEO_OPT
+   OPTIMIZER BFGS ! Good choice for 'small' systems (use LBFGS for large systems)
+   MAX_ITER  1000
+   &BFGS
+   &END
+ &END
+ &MD
+   ENSEMBLE NVT  ! sampling the canonical ensemble, accurate properties might need NVE
+   TEMPERATURE [K] 273.15
+   TIMESTEP [fs] 1
+   STEPS 1000
+   # GLE thermostat as generated at http://epfl-cosmo.github.io/gle4md 
+   # GLE provides an effective NVT sampling.
+   &THERMOSTAT
+     REGION MASSIVE
+     ! For initial heating, I am using the adaptive langevin thermostat as it heats up the system effectively. Use Nose-Hoover for equilibration studies.
+     ! Adaptive-Langevin and Nose-Hoover have further parameters that can be altered
+     TYPE AD_LANGEVIN
+   &END THERMOSTAT
+ &END
+  &PRINT
+   &TRAJECTORY
+     &EACH
+       MD 10
+     &END EACH
+   &END TRAJECTORY
+   &VELOCITIES OFF
+   &END VELOCITIES
+   &FORCES OFF
+   &END FORCES
+   &RESTART_HISTORY
+     &EACH
+       MD 100
+     &END EACH
+   &END RESTART_HISTORY
+   &RESTART
+     BACKUP_COPIES 2
+     &EACH
+       MD 100
+     &END EACH
+   &END RESTART
+  &END PRINT
+&END
