@@ -47,7 +47,7 @@
     ! use the OT METHOD for robust and efficient SCF, suitable for all non-metallic systems.
     &SCF                              
       SCF_GUESS ATOMIC ! can be used to RESTART an interrupted calculation
-      MAX_SCF 1000
+      MAX_SCF 1000 ! Large one set because of how rough the initial structure is
       EPS_SCF 1.0E-6 ! accuracy of the SCF procedure typically 1.0E-6 - 1.0E-7
       &OT
         ! an accurate preconditioner suitable also for larger systems
@@ -56,7 +56,7 @@
         MINIMIZER DIIS
       &END OT
       &OUTER_SCF ! repeat the inner SCF cycle 10 times
-        MAX_SCF 10
+        MAX_SCF 50
         EPS_SCF 1.0E-6 ! must match the above
       &END
       ! do not store the wfn during MD
@@ -80,8 +80,6 @@
             PARAMETER_FILE_NAME ./dftd3.dat
             TYPE DFTD3
             REFERENCE_FUNCTIONAL PBE
-            !Cutoff value is twice this amount
-            R_CUTOFF [angstrom] 12
          &END
       &END VDW_POTENTIAL
     &END XC
@@ -99,7 +97,7 @@
     ! atom coordinates can be in the &COORD section,
     ! or provided as an external file.
     &TOPOLOGY
-      COORD_FILE_NAME water.xyz
+      COORD_FILE_NAME ./water.xyz
       COORD_FILE_FORMAT XYZ
     &END
 
