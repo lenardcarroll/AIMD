@@ -37,7 +37,7 @@
        &END OT
        &OUTER_SCF T
          EPS_SCF  9.9999999999999995E-007
-         MAX_SCF 10
+         MAX_SCF 100
        &END OUTER_SCF
        &PRINT
          &RESTART OFF
@@ -65,7 +65,6 @@
        &VDW_POTENTIAL
          POTENTIAL_TYPE PAIR_POTENTIAL
          &PAIR_POTENTIAL
-           R_CUTOFF  1.2000000000000000E+001
            TYPE DFTD3
            PARAMETER_FILE_NAME ./dftd3.dat
            REFERENCE_FUNCTIONAL "PBE"
