@@ -12,7 +12,7 @@
   ! the electronic structure part of CP2K is named Quickstep
   METHOD Quickstep
   &DFT
-    ! basis sets and pseudopotential files can be found in cp2k/data
+    ! basis sets and pseudopotential files can also be found in cp2k/data
     BASIS_SET_FILE_NAME ./BASIS_MOLOPT
     POTENTIAL_FILE_NAME ./GTH_POTENTIALS
 
@@ -21,9 +21,6 @@
     MULTIPLICITY 1
 
     &MGRID
-       ! PW cutoff ... depends on the element (basis) too small cutoffs lead to the eggbox effect.
-       ! certain calculations (e.g. geometry optimization, vibrational frequencies,
-       ! NPT and cell optimizations, need higher cutoffs)
        CUTOFF [Ry] 500
        REL_CUTOFF [Ry] 50
        NGRIDS 5
@@ -32,10 +29,7 @@
     &QS
        ! use the GPW method (i.e. pseudopotential based calculations with the Gaussian and Plane Waves scheme).
        METHOD GPW 
-       ! default threshold for numerics ~ roughly numerical accuracy of the total energy per electron,
-       ! sets reasonable values for all other thresholds.
        EPS_DEFAULT 1.0E-10 
-       ! used for MD, the method used to generate the initial guess.
        EXTRAPOLATION USE_PREV_P
     &END
 
@@ -52,12 +46,12 @@
       EPS_SCF 1.0E-6 ! accuracy of the SCF procedure typically 1.0E-6 - 1.0E-7
       &OT
         ! an accurate preconditioner suitable also for larger systems
-        PRECONDITIONER FULL_SINGLE_INVERSE
+        PRECONDITIONER FULL_SINGLE_INVERSE ! FULL_ALL is the default
         ! the most robust choice (DIIS might sometimes be faster, but not as stable. CG for most accuracy).
         MINIMIZER DIIS
       &END OT
       &OUTER_SCF ! repeat the inner SCF cycle 10 times
-        MAX_SCF 10
+        MAX_SCF 100
         EPS_SCF 1.0E-6 ! must match the above
       &END
       ! do not store the wfn during MD
@@ -81,8 +75,6 @@
             PARAMETER_FILE_NAME ./dftd3.dat
             TYPE DFTD3
             REFERENCE_FUNCTIONAL PBE
-            !Cutoff value is twice this amount
-            R_CUTOFF [angstrom] 12
          &END
       &END VDW_POTENTIAL
     &END XC
@@ -102,7 +94,7 @@
     ! atom coordinates can be in the &COORD section,
     ! or provided as an external file.
     &TOPOLOGY
-      COORD_FILE_NAME water.xyz
+      COORD_FILE_NAME ./water.xyz
       COORD_FILE_FORMAT XYZ
     &END
 
