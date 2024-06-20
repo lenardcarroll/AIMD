@@ -23,3 +23,24 @@ val6 = rmsd(structure, [124], 0, 0.02)
 plotRMSD([val2, val3, val4, val5, val6], [val1], ["Cu1", "Cu2", "Cu3", "Cu4", "Cu5"], "ps")
 
 ```
+
+# Calculating the Average Minimum Cu-C Distance
+
+Here we will be calculating the average minimum Cu-C distance, for all Cu atoms, so we can see how at its minimum, the Cu atoms are moving closer or further apart from the graphene sheet.
+
+INSIDE PYTHON
+```
+from read import openStruct
+
+#Here we read in our structure file
+structure = openStruct("CU_AIMD-MD.TRAJ-pos-1.xyz")
+
+from distanceanalysis import minDist
+from distanceanalysis import plotaveDist
+
+#Here we calculate the minimum C-Cu distances, and averaging it over all Cu atoms
+X = minDist(structure,range(120),range(120,130))
+
+#Here we plot the average minimum C-Cu distance, starting from frame 0 ps and going in time steps of 0.02 ps
+plotaveDist(X,0,0.02,"ps")
+```
