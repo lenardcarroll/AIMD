@@ -63,8 +63,11 @@ increaseCell(structure,[2.4691451244551406E+01 ,0,0],[7.4065517955292268E+00,1.2
 ```
 
 We are using cell vectors for our simulation of:
+
+```
 2.4691451244551406E+01 0 0
 7.4065517955292268E+00 1.2831972785618889E+01 0
 1.3135604976388381E-10 5.5837223550118099E-11 18
+```
 
 We are multiplying the cell in the x-direction by 3 and the y-direction by 3.
