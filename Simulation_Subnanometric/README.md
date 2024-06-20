@@ -44,3 +44,27 @@ X = minDist(structure,range(120),range(120,130))
 #Here we plot the average minimum C-Cu distance, starting from frame 0 ps and going in time steps of 0.02 ps
 plotaveDist(X,0,0.02,"ps")
 ```
+
+# Multiplying the simulation cell of Cu5 on Graphene
+
+Here we will be multiplying the simulation cell of the Cu5 clusters on the graphene sheet for all MD frames. This is useful for visualization purposes.
+
+INSIDE PYTHON
+```
+from read import openStruct
+
+#Here we read in our structure file
+structure = openStruct("CU_AIMD-MD.TRAJ-pos-1.xyz")
+
+from multiCell import increaseCell
+
+#Cell gets multiplied here!
+increaseCell(structure,[2.4691451244551406E+01 ,0,0],[7.4065517955292268E+00,1.2831972785618889E+01 ,0],[1.3135604976388381E-10,5.5837223550118099E-11,18],3,3,1,range(130),"3x3x1_1.xyz")
+```
+
+We are using cell vectors for our simulation of:
+2.4691451244551406E+01 0 0
+7.4065517955292268E+00 1.2831972785618889E+01 0
+1.3135604976388381E-10 5.5837223550118099E-11 18
+
+We are multiplying the cell in the x-direction by 3 and the y-direction by 3.
